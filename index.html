@@ -52,6 +52,7 @@
   <input type="text" id="regPhone" placeholder="Phone number">
   <input type="text" id="regRoll" placeholder="Roll number">
   <input type="text" id="regCollege" placeholder="College">
+  <input type="email" id="regEmail" placeholder="Enter Gmail address (e.g. abc@gmail.com)">
   <select id="regGroup"><option>B.Com</option></select>
   <input type="file" id="regPhoto" accept="image/*">
   <div class="photo"><img id="previewPhoto" src="" alt="Preview Photo"></div>
@@ -62,7 +63,7 @@
 <!-- Forgot Password Section -->
 <div class="container hidden" id="forgotSection">
   <h2>Forgot Password</h2>
-  <input type="text" id="forgotName" placeholder="Enter your roll number">
+  <input type="email" id="forgotEmail" placeholder="Enter your Gmail">
   <input type="text" id="forgotPhone" placeholder="Enter phone number">
   <button onclick="recover()">Recover Password</button>
   <button class="link-btn" onclick="show('loginSection')">Back to Login</button>
@@ -189,26 +190,29 @@ function incrementAdminLock(msg) {
   loginAttempts++;
   alert(msg);
   if (loginAttempts >= 3) {
-    const adminOpt = document.querySelector('#loginRole option[value="admin"]');
+    cont adminOpt = document.querySelector('#loginRole option[value="admin"]');
     if (adminOpt) adminOpt.remove();
     alert("Too many attempts. Admin access removed.");
   }
 }
-
 function register() {
-  const name = regName.value.trim(), pass = regPassword.value.trim(),
-        phone = regPhone.value.trim(), College = regCollege.value.trim(),
-        roll = regRoll.value.trim(), group = regGroup.value;
+  const name = regName.value.trim(),
+        pass = regPassword.value.trim(),
+        phone = regPhone.value.trim(),
+        College = regCollege.value.trim(),
+        roll = regRoll.value.trim(),
+        group = regGroup.value,
+        email = regEmail.value.trim();  // NEW
 
-  if (!name || !pass || !phone || !College || !roll || !group || !regPhotoData)
+  if (!name || !pass || !phone || !College || !roll || !group || !email || !regPhotoData)
     return alert("All fields required");
 
-  auth.createUserWithEmailAndPassword(`${roll}@college.edu`, pass)
+  auth.createUserWithEmailAndPassword(email, pass)
     .then(cred => {
       const studentData = {
         uid: cred.user.uid,
         name, phone, College, roll, group,
-        email: `${roll}@college.edu`,
+        email,
         photo: regPhotoData,
         role: "student",
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -221,23 +225,24 @@ function register() {
       show("loginSection");
     })
     .catch(err => {
-  if (err.code === 'auth/email-already-in-use') {
-    alert("This roll number is already registered. Please log in instead.");
-    show("loginSection");
-  } else {
-    alert("Registration Error: " + err.message);
-  }
-});
+      if (err.code === 'auth/email-already-in-use') {
+        alert("This Gmail is already registered. Please log in instead.");
+        show("loginSection");
+      } else {
+        alert("Registration Error: " + err.message);
+      }
+    });
 }
 
+
 function recover() {
-  const name = forgotName.value.trim();
-  const email = `${name}@college.edu`;
+  const email = forgotEmail.value.trim();
+  if (!email) return alert("Enter your Gmail");
+
   auth.sendPasswordResetEmail(email)
     .then(() => alert("Password reset link sent to: " + email))
     .catch(err => alert("Error: " + err.message));
 }
-
 function logout() { show("loginSection"); }
 
 function populateStudentNames() {
