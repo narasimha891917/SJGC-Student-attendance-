@@ -1,3 +1,4 @@
+<!-- Save as attendance.html or index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -28,6 +29,7 @@
 </head>
 <body>
 
+<!-- Login Section -->
 <div class="container" id="loginSection">
   <h2>Login</h2>
   <select id="loginRole">
@@ -42,13 +44,14 @@
   <button class="link-btn" onclick="show('forgotSection')">Forgot Password?</button>
 </div>
 
+<!-- Registration Section -->
 <div class="container hidden" id="registerSection">
   <h2>Register New Student</h2>
   <input type="text" id="regName" placeholder="Full name">
   <input type="password" id="regPassword" placeholder="Password">
   <input type="text" id="regPhone" placeholder="Phone number">
   <input type="text" id="regRoll" placeholder="Roll number">
-    <input type="text" id="regCollege" placeholder="College">
+  <input type="text" id="regCollege" placeholder="College">
   <select id="regGroup"><option>B.Com</option></select>
   <input type="file" id="regPhoto" accept="image/*">
   <div class="photo"><img id="previewPhoto" src="" alt="Preview Photo"></div>
@@ -56,6 +59,7 @@
   <button class="link-btn" onclick="show('loginSection')">Back to Login</button>
 </div>
 
+<!-- Forgot Password Section -->
 <div class="container hidden" id="forgotSection">
   <h2>Forgot Password</h2>
   <input type="text" id="forgotName" placeholder="Enter your name">
@@ -64,6 +68,7 @@
   <button class="link-btn" onclick="show('loginSection')">Back to Login</button>
 </div>
 
+<!-- Student Dashboard -->
 <div class="container hidden" id="studentDashboard">
   <h2>Student Dashboard</h2>
   <div class="flex">
@@ -84,6 +89,7 @@
   <button onclick="logout()">Logout</button>
 </div>
 
+<!-- Admin Dashboard -->
 <div class="container hidden" id="adminDashboard">
   <h2>Admin Dashboard</h2>
   <div class="form-section">
@@ -105,53 +111,51 @@
 
   <button onclick="logout()">Logout</button>
 </div>
+
 <!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/10.5.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.5.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore-compat.js"></script>
 
 <script>
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyAtez45mnvVijV6UkOJLgM7UYGAhBcoPZY",
-  authDomain: "sjgc-student-attendance.firebaseapp.com",
-  databaseURL: "https://sjgc-student-attendance-default-rtdb.firebaseio.com",
-  projectId: "sjgc-student-attendance",
-  storageBucket: "sjgc-student-attendance.firebasestorage.app",
-  messagingSenderId: "321570162960",
-  appId: "1:321570162960:web:d6a0e6012d0b5462157d95",
-  measurementId: "G-XSCB5PFM69"
+  apiKey: "AIzaSyAlEo10-imB1Hj8oEu4iNf6KD1iDREXbdc",
+  authDomain: "results-dashboard.firebaseapp.com",
+  databaseURL: "https://results-dashboard-default-rtdb.firebaseio.com",
+  projectId: "results-dashboard",
+  storageBucket: "results-dashboard.appspot.com",
+  messagingSenderId: "465722379609",
+  appId: "1:465722379609:web:d995f495bb4d7e61b05048",
+  measurementId: "G-B2W818CL13"
 };
 
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  const db = firebase.firestore();
-</script>
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
 
-<script>
-  const users = { "Admin": { password: "admin123", role: "admin" } };
-  let attendanceData = [], regPhotoData = "", loginAttempts = 0;
-  const timeSlots = ["10", "11", "12", "14", "15", "16"];
+let users = { "Admin": { password: "admin123", role: "admin" } };
+let regPhotoData = "";
+const timeSlots = ["10", "11", "12", "14", "15", "16"];
+let loginAttempts = 0;
 
-  document.getElementById("regPhoto").addEventListener("change", e => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = e => {
-        regPhotoData = e.target.result;
-        document.getElementById("previewPhoto").src = regPhotoData;
-      };
-      reader.readAsDataURL(file);
-    }
-  });
-
-  function show(id) {
-    document.querySelectorAll(".container").forEach(div => div.classList.add("hidden"));
-    document.getElementById(id).classList.remove("hidden");
+document.getElementById("regPhoto").addEventListener("change", e => {
+  const file = e.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      regPhotoData = e.target.result;
+      document.getElementById("previewPhoto").src = regPhotoData;
+    };
+    reader.readAsDataURL(file);
   }
+});
 
-  function login() {
+function show(id) {
+  document.querySelectorAll(".container").forEach(div => div.classList.add("hidden"));
+  document.getElementById(id).classList.remove("hidden");
+}
+
+function login() {
   const name = loginName.value.trim(), pass = loginPassword.value.trim(), role = loginRole.value;
   if (!name || !pass || !role) return alert("Please fill in all fields.");
 
@@ -164,11 +168,8 @@ const firebaseConfig = {
     return;
   }
 
-  // Student login
   auth.signInWithEmailAndPassword(`${name}@college.edu`, pass)
-    .then(cred => {
-      return db.collection("students").doc(cred.user.uid).get();
-    })
+    .then(cred => db.collection("students").doc(cred.user.uid).get())
     .then(doc => {
       if (!doc.exists) return alert("Student not found.");
       const data = doc.data();
@@ -184,39 +185,52 @@ const firebaseConfig = {
     .catch(err => alert("Login Error: " + err.message));
 }
 
-
-  function incrementAdminLock(msg) {
-    loginAttempts++;
-    alert(msg);
-    if (loginAttempts >= 3) {
-      const adminOpt = document.querySelector('#loginRole option[value="admin"]');
-      if (adminOpt) adminOpt.remove();
-      alert("Too many attempts. Admin access removed.");
-    }
+function incrementAdminLock(msg) {
+  loginAttempts++;
+  alert(msg);
+  if (loginAttempts >= 3) {
+    const adminOpt = document.querySelector('#loginRole option[value="admin"]');
+    if (adminOpt) adminOpt.remove();
+    alert("Too many attempts. Admin access removed.");
   }
+}
 
-  function register() {
-  const name = regName.value.trim(), pass = regPassword.value.trim(), phone = regPhone.value.trim(),
-    College = regCollege.value.trim(), roll = regRoll.value.trim(), group = regGroup.value;
+function register() {
+  const name = regName.value.trim(), pass = regPassword.value.trim(),
+        phone = regPhone.value.trim(), College = regCollege.value.trim(),
+        roll = regRoll.value.trim(), group = regGroup.value;
 
   if (!name || !pass || !phone || !College || !roll || !group || !regPhotoData)
     return alert("All fields required");
 
   auth.createUserWithEmailAndPassword(`${roll}@college.edu`, pass)
     .then(cred => {
-      return db.collection("students").doc(cred.user.uid).set({
-        name, phone, College, roll, group, photo: regPhotoData
-      });
+      const studentData = {
+        uid: cred.user.uid,
+        name, phone, College, roll, group,
+        email: `${roll}@college.edu`,
+        photo: regPhotoData,
+        role: "student",
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+      users[name] = { name, roll, group, photo: regPhotoData, role: "student" };
+      return db.collection("students").doc(cred.user.uid).set(studentData);
     })
     .then(() => {
       alert("Registered! Please log in.");
       show("loginSection");
     })
-    .catch(err => alert("Registration Error: " + err.message));
+    .catch(err => {
+  if (err.code === 'auth/email-already-in-use') {
+    alert("This roll number is already registered. Please log in instead.");
+    show("loginSection");
+  } else {
+    alert("Registration Error: " + err.message);
+  }
+});
 }
 
-
-  function recover() {
+function recover() {
   const name = forgotName.value.trim();
   const email = `${name}@college.edu`;
   auth.sendPasswordResetEmail(email)
@@ -224,40 +238,48 @@ const firebaseConfig = {
     .catch(err => alert("Error: " + err.message));
 }
 
+function logout() { show("loginSection"); }
 
-  function logout() { show("loginSection"); }
-
-  function populateStudentNames() {
-    const list = document.getElementById("studentName"); list.innerHTML = "";
-    Object.keys(users).forEach(name => {
-      if (users[name].role === "student") {
-        const opt = document.createElement("option");
-        opt.value = opt.textContent = name;
-        list.appendChild(opt);
-      }
+function populateStudentNames() {
+  const list = document.getElementById("studentName");
+  list.innerHTML = "";
+  db.collection("students").get().then(snapshot => {
+    snapshot.docs.forEach(doc => {
+      const data = doc.data();
+      const opt = document.createElement("option");
+      opt.value = data.name;
+      opt.textContent = data.name;
+      list.appendChild(opt);
+      users[data.name] = {
+        name: data.name, roll: data.roll, group: data.group, photo: data.photo, role: "student"
+      };
     });
-  }
-
-  function addAttendance() {
-  const student = studentName.value;
-  const date = attDate.value, time = attTime.value, subject = attSubject.value, status = attStatus.value;
-  if (!student || !date || !time || !subject || !status) return alert("Fill all fields.");
-
-  const user = Object.values(users).find(u => u.name === student);
-  if (!user) return alert("Student data missing");
-
-  db.collection("attendance").add({
-    student, date, time, subject, status
-  }).then(() => {
-    const row = document.createElement("tr");
-    row.innerHTML = `<td>${student}</td><td>${user.roll}</td><td>${user.group}</td><td><img src="${user.photo}" width="40" style="border-radius:50%"></td><td>${subject}</td><td>${date}</td><td>${attTime.options[attTime.selectedIndex].text}</td><td>${status}</td>`;
-    adminTableBody.appendChild(row);
-    alert("Attendance Added");
-  }).catch(err => alert("Failed to add attendance: " + err.message));
+  });
 }
 
+function addAttendance() {
+  const student = studentName.value, date = attDate.value, time = attTime.value,
+        subject = attSubject.value, status = attStatus.value;
 
-  function renderTimetable(student) {
+  if (!student || !date || !time || !subject || !status)
+    return alert("Fill all fields.");
+
+  const user = users[student];
+  if (!user) return alert("Student data missing");
+
+  db.collection("attendance").add({ student, date, time, subject, status })
+    .then(() => {
+      const row = document.createElement("tr");
+      row.innerHTML = `<td>${student}</td><td>${user.roll}</td><td>${user.group}</td>
+      <td><img src="${user.photo}" width="40" style="border-radius:50%"></td>
+      <td>${subject}</td><td>${date}</td><td>${attTime.options[attTime.selectedIndex].text}</td><td>${status}</td>`;
+      adminTableBody.appendChild(row);
+      alert("Attendance Added");
+    })
+    .catch(err => alert("Failed to add attendance: " + err.message));
+}
+
+function renderTimetable(student) {
   db.collection("attendance").where("student", "==", student).get()
     .then(snapshot => {
       const grouped = {};
@@ -281,33 +303,32 @@ const firebaseConfig = {
     });
 }
 
+function renderThreeDayTable(grouped) {
+  const body = document.getElementById("threeDayBody");
+  body.innerHTML = "";
+  const dates = [...Array(3)].map((_, i) => {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    return d.toISOString().split("T")[0];
+  });
+  dates.forEach((date, i) => {
+    const color = i === 0 ? "#d4edda" : i === 1 ? "#d1ecf1" : "#e2e3e5";
+    let row = `<tr style="background:${color}"><td><b>${date}</b></td>`;
+    timeSlots.forEach(slot => {
+      const entry = grouped[date]?.[slot];
+      row += `<td class="${entry?.startsWith("Present") ? 'present' : entry?.startsWith("Absent") ? 'absent' : 'dash'}">${entry || '-'}</td>`;
+    });
+    body.innerHTML += row + "</tr>";
+  });
+}
 
-  function renderThreeDayTable(grouped) {
-    const body = document.getElementById("threeDayBody");
-    body.innerHTML = "";
-    const dates = [...Array(3)].map((_, i) => {
-      const d = new Date(); d.setDate(d.getDate() - i);
-      return d.toISOString().split("T")[0];
-    });
-    dates.forEach((date, i) => {
-      const color = i === 0 ? "#d4edda" : i === 1 ? "#d1ecf1" : "#e2e3e5";
-      let row = `<tr style="background:${color}"><td><b>${date}</b></td>`;
-      timeSlots.forEach(slot => {
-        const entry = grouped[date]?.[slot];
-        row += `<td class="${entry?.startsWith("Present") ? 'present' : entry?.startsWith("Absent") ? 'absent' : 'dash'}">${entry || '-'}</td>`;
-      });
-      body.innerHTML += row + "</tr>";
-    });
-  }
-
-  function downloadSummaryPDF() {
-    html2canvas(document.querySelector("#threeDayBody").closest("table")).then(canvas => {
-      const pdf = new jspdf.jsPDF();
-      const w = pdf.internal.pageSize.getWidth(), h = canvas.height * w / canvas.width;
-      pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, w, h);
-      pdf.save("attendance_summary.pdf");
-    });
-  }
+function downloadSummaryPDF() {
+  html2canvas(document.querySelector("#threeDayBody").closest("table")).then(canvas => {
+    const pdf = new jspdf.jsPDF();
+    const w = pdf.internal.pageSize.getWidth(), h = canvas.height * w / canvas.width;
+    pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, w, h);
+    pdf.save("attendance_summary.pdf");
+  });
+}
 </script>
 </body>
 </html>
