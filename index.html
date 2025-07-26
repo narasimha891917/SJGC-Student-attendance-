@@ -196,37 +196,34 @@ function incrementAdminLock(msg) {
   }
 }
 function register() {
-  const name = regName.value.trim(),
-        pass = regPassword.value.trim(),
-        phone = regPhone.value.trim(),
-        College = regCollege.value.trim(),
-        roll = regRoll.value.trim(),
-        group = regGroup.value,
-        email = regEmail.value.trim();  // NEW
+  const name = regName.value.trim();
+  const pass = regPassword.value.trim();
+  const phone = regPhone.value.trim();
+  const College = regCollege.value.trim();
+  const roll = regRoll.value.trim();
+  const group = regGroup.value;
+  const email = regEmail.value.trim(); // NEW FIELD
+  const photo = regPhotoData;
 
-  if (!name || !pass || !phone || !College || !roll || !group || !email || !regPhotoData)
-    return alert("All fields required");
+  if (!name || !pass || !phone || !College || !roll || !group || !email || !photo)
+    return alert("All fields are required.");
 
-  auth.createUserWithEmailAndPassword(email, pass)
+  firebase.auth().createUserWithEmailAndPassword(email, pass)
     .then(cred => {
-      const studentData = {
+      return db.collection("students").doc(cred.user.uid).set({
         uid: cred.user.uid,
-        name, phone, College, roll, group,
-        email,
-        photo: regPhotoData,
+        name, phone, College, roll, group, email, photo,
         role: "student",
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      };
-      users[name] = { name, roll, group, photo: regPhotoData, role: "student" };
-      return db.collection("students").doc(cred.user.uid).set(studentData);
+      });
     })
     .then(() => {
-      alert("Registered! Please log in.");
+      alert("Registered successfully! You can now log in.");
       show("loginSection");
     })
     .catch(err => {
       if (err.code === 'auth/email-already-in-use') {
-        alert("This Gmail is already registered. Please log in instead.");
+        alert("This Gmail is already registered. Please log in.");
         show("loginSection");
       } else {
         alert("Registration Error: " + err.message);
@@ -234,15 +231,14 @@ function register() {
     });
 }
 
-
 function recover() {
   const email = forgotEmail.value.trim();
   if (!email) return alert("Enter your Gmail");
 
-  auth.sendPasswordResetEmail(email)
+  firebase.auth().sendPasswordResetEmail(email)
     .then(() => alert("Password reset link sent to: " + email))
     .catch(err => alert("Error: " + err.message));
-}
+    }
 function logout() { show("loginSection"); }
 
 function populateStudentNames() {
