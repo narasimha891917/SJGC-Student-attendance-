@@ -2,126 +2,344 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Login/Register with Gmail - Firebase</title>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <title>Advanced Attendance System</title>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
   <style>
-    body { font-family: Arial; padding: 20px; background: #f5f5f5; }
-    h2 { margin-top: 40px; }
-    input { display: block; margin: 10px 0; padding: 8px; width: 250px; }
-    button { padding: 10px 15px; margin-top: 10px; }
-    .section { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; box-shadow: 0 0 10px #ccc; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: url('your-image.jpg') no-repeat center center fixed;
+      background-size: cover;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      width: 90%;
+      max-width: 400px;
+      margin: 30px auto;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    #adminDashboard, #studentDashboard { max-width: 1000px; }
+    h2, h3 { text-align: center; color: #2c3e50; }
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 15px;
+    }
+    button {
+      background-color: #28a745;
+      color: white;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover { background-color: #218838; }
+    .link-btn {
+      background: none;
+      border: none;
+      color: #007bff;
+      text-decoration: underline;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .hidden { display: none; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      font-size: 14px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: center;
+    }
+    th { background-color: #007bff; color: white; }
+    .photo img {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #007bff;
+    }
+    .form-section label {
+      font-weight: bold;
+      display: block;
+      margin: 8px 0 5px;
+    }
+    .present { color: green; font-weight: bold; }
+    .absent { color: red; font-weight: bold; }
+    .dash { color: gray; font-weight: bold; }
+    .flex {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
   </style>
 </head>
 <body>
 
-  <h1>Firebase Login/Register (Gmail)</h1>
+<!-- Sections -->
+<div class="container" id="loginSection">
+  <h2>Login</h2>
+  <select id="loginRole">
+    <option value="">Select Role</option>
+    <option value="student">Student</option>
+    <option value="admin">Admin</option>
+  </select>
+  <input type="text" id="loginName" placeholder="Enter your name">
+  <input type="password" id="loginPassword" placeholder="Enter password">
+  <button onclick="login()">Login</button>
+  <button class="link-btn" onclick="show('registerSection')">New Registration</button>
+  <button class="link-btn" onclick="show('forgotSection')">Forgot Password?</button>
+</div>
 
-  <div class="section">
-    <h2>Create Account</h2>
-    <input type="text" id="regName" placeholder="Name">
-    <input type="tel" id="regPhone" placeholder="Phone Number">
-    <input type="text" id="regCollege" placeholder="College">
-    <input type="text" id="regGroup" placeholder="Group">
-    <input type="email" id="regEmail" placeholder="Email (Gmail)">
-    <input type="password" id="regPassword" placeholder="Password">
-    <button onclick="register()">Create Account</button>
+<div class="container hidden" id="registerSection">
+  <h2>Register New Student</h2>
+  <input type="text" id="regName" placeholder="Full name">
+  <input type="password" id="regPassword" placeholder="Password">
+  <input type="text" id="regPhone" placeholder="Phone number">
+  <input type="text" id="regRoll" placeholder="Roll number">
+  <input type="text" id="regCollege" value="SILVER JUBILEE GOVERNMENT COLLEGE" readonly>
+  <select id="regGroup">
+    <option value="">Select Group</option>
+    <option value="B.Com">B.Com</option>
+    <option value="B.A">B.A</option>
+    <option value="B.Sc">B.Sc</option>
+  </select>
+  <input type="file" id="regPhoto" accept="image/*">
+  <div class="photo"><img id="previewPhoto" src="" alt="Preview Photo"></div>
+  <button onclick="register()">Register</button>
+  <button class="link-btn" onclick="show('loginSection')">Back to Login</button>
+</div>
+
+<div class="container hidden" id="forgotSection">
+  <h2>Forgot Password</h2>
+  <input type="text" id="forgotName" placeholder="Enter your name">
+  <input type="text" id="forgotPhone" placeholder="Enter phone number">
+  <button onclick="alert('Feature under development.')">Recover Password</button>
+  <button class="link-btn" onclick="show('loginSection')">Back to Login</button>
+</div>
+
+<div class="container hidden" id="studentDashboard">
+  <h2>Student Dashboard</h2>
+  <div class="flex">
+    <div style="flex: 1;">
+      <p><strong>Name:</strong> <span id="sName"></span></p>
+      <p><strong>Roll No:</strong> <span id="sRoll"></span></p>
+      <p><strong>Group:</strong> <span id="sGroup"></span></p>
+      <p><strong>College:</strong> <span id="sCollege"></span></p>
+      <p><strong>Phone:</strong> <span id="sPhone"></span></p>
+    </div>
+    <div class="photo" style="align-self: flex-start;">
+      <img id="sPhoto" src="1.jpg" alt="Student Photo">
+    </div>
+  </div>
+  <h3>Today's Attendance</h3>
+  <table><thead><tr><th>Date</th><th>10–11</th><th>11–12</th><th>12–1</th><th>2–3</th><th>3–4</th><th>4–5</th></tr></thead><tbody id="timetableBody"></tbody></table>
+  <h3>Last 3 Days Attendance</h3>
+  <table><thead><tr><th>Date</th><th>10–11</th><th>11–12</th><th>12–1</th><th>2–3</th><th>3–4</th><th>4–5</th></tr></thead><tbody id="threeDayBody"></tbody></table>
+  <button onclick="downloadSummaryPDF()">Download Summary as PDF</button>
+  <button onclick="logout()">Logout</button>
+</div>
+
+<div class="container hidden" id="adminDashboard">
+  <h2>Admin Dashboard</h2>
+  <div class="form-section">
+    <label>Filter by Group</label>
+    <select id="filterGroup" onchange="populateStudentNames()">
+      <option value="">All Groups</option>
+      <option value="B.Com">B.Com</option>
+      <option value="B.A">B.A</option>
+      <option value="B.Sc">B.Sc</option>
+    </select>
+    <label>Student Name</label><select id="studentName"></select>
+    <label>Date</label><input type="date" id="attDate">
+    <label>Time</label>
+    <select id="attTime">
+      <option value="10">10–11</option><option value="11">11–12</option>
+      <option value="12">12–1</option><option value="14">2–3</option>
+      <option value="15">3–4</option><option value="16">4–5</option>
+    </select>
+    <label>Subject</label><select id="attSubject"></select>
+    <label>Status</label><select id="attStatus"><option>Present</option><option>Absent</option></select>
+    <button onclick="addAttendance()">Add Attendance</button>
   </div>
 
-  <div class="section">
-    <h2>Login</h2>
-    <input type="email" id="loginEmail" placeholder="Email (Gmail)">
-    <input type="password" id="loginPassword" placeholder="Password">
-    <button onclick="login()">Login</button>
-  </div>
+  <h3>Attendance Records</h3>
+  <table><thead><tr><th>Name</th><th>Roll</th><th>Group</th><th>Photo</th><th>Subject</th><th>Date</th><th>Time</th><th>Status</th></tr></thead><tbody id="adminTableBody"></tbody></table>
+  <button onclick="logout()">Logout</button>
+</div>
 
-  <div class="section">
-    <h2>Forgot Password</h2>
-    <input type="email" id="forgotEmail" placeholder="Enter your Gmail">
-    <button onclick="recover()">Send Reset Link</button>
-  </div>
+<!-- Scripts -->
+<script>
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyDDo7VXuwtPWKTNJl7ZTPPHO4ESwt66ptg",
+  authDomain: "sjgc-student-attendance-e98ab.firebaseapp.com",
+  projectId: "sjgc-student-attendance-e98ab",
+  storageBucket: "sjgc-student-attendance-e98ab.firebasestorage.app",
+  messagingSenderId: "794866633263",
+  appId: "1:794866633263:web:026f83e3a744bd787dd4da",
+  measurementId: "G-CFJNTLK7LT"
+};
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.database();
 
-  <script>
-    // Your Firebase config
-    const firebaseConfig = {
-      apiKey: "AIzaSyD_5OXqGIcR2yH_nGC8GVgmLwJfJaQnmuw",
-      authDomain: "student-dashboard-821ae.firebaseapp.com",
-      projectId: "student-dashboard-821ae",
-      storageBucket: "student-dashboard-821ae.appspot.com",
-      messagingSenderId: "785480958148",
-      appId: "1:785480958148:web:bb187cfe8d969aafca0991",
-      measurementId: "G-01QDZ9VRJ4"
-    };
+  let regPhotoData = "", loginAttempts = 0, attendanceData = [];
+  const timeSlots = ["10", "11", "12", "14", "15", "16"];
+  const groupSubjects = {
+    "B.Com": ["Stock Market", "Tally", "Digital Marketing", "Advance Accounting", "Investment Planning"],
+    "B.A": ["Political Science", "History", "Economics", "Public Administration", "English Literature"],
+    "B.Sc": ["Physics", "Chemistry", "Mathematics", "Botany", "Zoology", "Computer Science"]
+  };
 
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
+  document.getElementById("regPhoto").addEventListener("change", e => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = e => {
+        regPhotoData = e.target.result;
+        document.getElementById("previewPhoto").src = regPhotoData;
+      };
+      reader.readAsDataURL(file);
+    }
+  });
 
-    // Register function
-    function register() {
-      const name = document.getElementById("regName").value.trim();
-      const phone = document.getElementById("regPhone").value.trim();
-      const college = document.getElementById("regCollege").value.trim();
-      const group = document.getElementById("regGroup").value.trim();
-      const email = document.getElementById("regEmail").value.trim();
-      const password = document.getElementById("regPassword").value.trim();
+  function show(id) {
+    document.querySelectorAll(".container").forEach(div => div.classList.add("hidden"));
+    document.getElementById(id).classList.remove("hidden");
+  }
 
-      if (!name || !phone || !college || !group || !email || !password) {
-        alert("Please fill in all fields.");
-        return;
-      }
+  function register() {
+    const name = regName.value.trim(), pass = regPassword.value.trim(), phone = regPhone.value.trim(),
+      college = regCollege.value.trim(), roll = regRoll.value.trim(), group = regGroup.value;
 
-      auth.createUserWithEmailAndPassword(email, password)
-        .then(userCredential => {
-          alert("Account created successfully!");
-          // Save extra info to localStorage or Firebase DB if needed
-        })
-        .catch(error => {
-          if (error.code === "auth/email-already-in-use") {
-            alert("Email is already registered. Please log in.");
-          } else {
-            alert("Registration Error: " + error.message);
-          }
-        });
+    if (!name || !pass || !phone || !college || !roll || !group || !regPhotoData) return alert("All fields required");
+
+    const email = `${roll}@college.com`;
+
+    auth.createUserWithEmailAndPassword(email, pass)
+      .then(cred => db.ref("users/" + roll).set({ name, phone, college, roll, group, photo: regPhotoData, role: "student" }))
+      .then(() => {
+        alert("Registered! Please log in.");
+        show("loginSection");
+      })
+      .catch(err => alert("Error: " + err.message));
+  }
+
+  function login() {
+    const name = loginName.value.trim(), pass = loginPassword.value.trim(), role = loginRole.value;
+    if (!name || !pass || !role) return alert("Please fill in all fields.");
+
+    if (role === "admin") {
+      if (name !== "Admin" || pass !== "admin123") return incrementAdminLock("Admin login failed.");
+      loginAttempts = 0;
+      show("adminDashboard");
+      populateStudentNames();
+      return;
     }
 
-    // Login function
-    function login() {
-      const email = document.getElementById("loginEmail").value.trim();
-      const password = document.getElementById("loginPassword").value.trim();
+    const email = `${name}@college.com`;
+    auth.signInWithEmailAndPassword(email, pass)
+      .then(() => db.ref("users").orderByChild("name").equalTo(name).once("value"))
+      .then(snapshot => {
+        if (!snapshot.exists()) return alert("User not found");
+        const userData = Object.values(snapshot.val())[0];
+        if (userData.role !== "student") return alert("Unauthorized");
+        show("studentDashboard");
+        sName.textContent = name;
+        sRoll.textContent = userData.roll;
+        sGroup.textContent = userData.group;
+        sPhone.textContent = userData.phone;
+        sCollege.textContent = userData.college;
+        sPhoto.src = userData.photo;
+        renderTimetable(name);
+      })
+      .catch(err => alert("Login Error: " + err.message));
+  }
 
-      if (!email || !password) {
-        alert("Please enter your Gmail and password.");
-        return;
-      }
-
-      auth.signInWithEmailAndPassword(email, password)
-        .then(userCredential => {
-          alert("Logged in successfully!");
-          // Redirect to dashboard if needed
-        })
-        .catch(error => {
-          alert("Login failed: " + error.message);
-        });
+  function incrementAdminLock(msg) {
+    loginAttempts++;
+    alert(msg);
+    if (loginAttempts >= 3) {
+      document.querySelector('#loginRole option[value="admin"]')?.remove();
+      alert("Too many attempts. Admin access removed.");
     }
+  }
 
-    // Password reset function
-    function recover() {
-      const email = document.getElementById("forgotEmail").value.trim();
+  function logout() { show("loginSection"); }
 
-      if (!email) {
-        alert("Please enter your Gmail to reset password.");
-        return;
-      }
+  function populateStudentNames() {
+    const list = document.getElementById("studentName");
+    const filter = document.getElementById("filterGroup").value || "";
+    list.innerHTML = "";
+    db.ref("users").once("value", snapshot => {
+      snapshot.forEach(child => {
+        const user = child.val();
+        if (user.role === "student" && (filter === "" || user.group === filter)) {
+          const opt = document.createElement("option");
+          opt.value = opt.textContent = user.name;
+          list.appendChild(opt);
+        }
+      });
+      updateSubjectOptions(filter);
+    });
+  }
 
-      auth.sendPasswordResetEmail(email)
-        .then(() => {
-          alert("Password reset link sent to: " + email);
-        })
-        .catch(error => {
-          alert("Error sending reset link: " + error.message);
-        });
+  function updateSubjectOptions(group) {
+    const subjectSelect = document.getElementById("attSubject");
+    subjectSelect.innerHTML = "";
+    if (groupSubjects[group]) {
+      groupSubjects[group].forEach(sub => {
+        const opt = document.createElement("option");
+        opt.value = opt.textContent = sub;
+        subjectSelect.appendChild(opt);
+      });
+    } else {
+      const opt = document.createElement("option");
+      opt.textContent = "Select group first";
+      subjectSelect.appendChild(opt);
     }
-  </script>
+  }
 
+  function addAttendance() {
+    const student = studentName.value, date = attDate.value, time = attTime.value,
+          subject = attSubject.value, status = attStatus.value;
+    if (!student || !date || !time || !subject || !status) return alert("Fill all fields.");
+    const row = document.createElement("tr");
+    row.innerHTML = `<td>${student}</td><td>---</td><td>---</td><td><img src="#" width="40" style="border-radius:50%"></td><td>${subject}</td><td>${date}</td><td>${attTime.options[attTime.selectedIndex].text}</td><td>${status}</td>`;
+    adminTableBody.appendChild(row);
+    alert("Attendance Added (local only — Firebase saving not yet implemented)");
+  }
+
+  function renderTimetable(student) {
+    // Placeholder — for Firebase you'd fetch attendance from DB
+    timetableBody.innerHTML = "<tr><td>Today</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>";
+    threeDayBody.innerHTML = "<tr><td>Yesterday</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>";
+  }
+
+  function downloadSummaryPDF() {
+    html2canvas(document.querySelector("#threeDayBody").closest("table")).then(canvas => {
+      const pdf = new jspdf.jsPDF();
+      const w = pdf.internal.pageSize.getWidth(), h = canvas.height * w / canvas.width;
+      pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, w, h);
+      pdf.save("attendance_summary.pdf");
+    });
+  }
+</script>
 </body>
 </html>
